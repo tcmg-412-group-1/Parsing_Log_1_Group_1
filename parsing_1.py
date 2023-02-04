@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import pip._vendor.requests as request
 import re
 from collections import Counter
