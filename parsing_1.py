@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pip._vendor.requests as request
+import requests
 import re
 from collections import Counter
 import csv
@@ -25,7 +25,7 @@ def write_csv(counter):
         for item in counter:
             writer.writerow((item, counter[item]))
 
-r = request.get(URL, stream=True)
+r = requests.get(URL, stream=True)
 
 with open('parsing_log_1', 'wb') as log:
     log.write(r.content)
