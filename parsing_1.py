@@ -12,10 +12,7 @@ def reader(filename):
         log = file.read()
         regexp = r'\d{2}\/\D{3}\/\d{4}'
         time = re.findall(regexp, log)
-        return(time)
-
-def count(time):
-    return Counter(time)
+        return time
 
 def write_csv(counter):
     with open('frequency.csv', 'w', newline='') as csvfile:
@@ -30,4 +27,4 @@ r = requests.get(URL, stream=True)
 with open('parsing_log_1', 'wb') as log:
     log.write(r.content)
 
-write_csv(count(reader('parsing_log_1')))
+write_csv(Counter(reader('parsing_log_1')))
