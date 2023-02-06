@@ -9,9 +9,15 @@ URL = "https://s3.amazonaws.com/tcmg476/http_access_log"
 CACHED_LOG_FILENAME = "parsing_log_1"
 
 def parse(log):
-    regexp = r'\d{2}\/\D{3}\/\d{4}'
-    time = re.findall(regexp, log)
-    return time
+    # log format:
+    # hostname( identity)? userid [##/Mon/####:##:##:## -####] "request" status response_size
+    # Note that this skips malformed lines like the one on line 604735 in the
+    # example file. Unfortunately, this causes the regex to be much longer than
+    # it needs to be. I'd love to write a proper parser for this, but the
+    # prospect of doing so in a dynamically typed language scares me a little.
+    regexp = r"^[_0-9.A-Za-z-]+(?: [_0-9.A-Za-z-]+)? [_0-9.A-Za-z-]+ \[(\d{2}\/\w{3}\/\d{4}):\d{2}:\d{2}:\d{2} -\d{4}\] \"[^\"]*\" \d{3} [0-9-]+$"
+    dates = re.findall(regexp, log, re.MULTILINE)
+    return dates
 
 def write_csv(counter):
     with open('frequency.csv', 'w', newline='') as csvfile:
