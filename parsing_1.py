@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from collections import Counter
+from bisect import bisect_left
 from datetime import datetime
 import re
 import requests
@@ -8,6 +8,7 @@ import requests
 URL = "https://s3.amazonaws.com/tcmg476/http_access_log"
 CACHED_LOG_FILENAME = "parsing_log_1"
 APACHE_LOG_DATE_FORMAT = "%d/%b/%Y"
+OUTPUT_DATE_FORMAT = "%Y-%m-%d"
 
 # log format:
 # hostname( identity)? userid [DD/Mon/YYYY:HH:MM:SS -####] "request" status response_size
@@ -42,3 +43,20 @@ except FileNotFoundError:
         log.write(file_contents)
 
 dates = parse(file_contents)
+# This will allow us to binary search for the first date from six months ago
+dates.sort()
+# `x[-1]` fetches the last element in `x`.
+last_date = dates[-1]
+# This isn't exactly 6 months, but it's probably close enough
+six_months_before_last = last_date.replace(month=last_date.month - 6)
+# Find where `six_months_before_last` would be if it was in the list.
+# If it's already in the list, this finds its first occurence.
+six_months_index = bisect_left(dates, six_months_before_last)
+last_six_months = dates[six_months_index:]
+
+first_date_str = dates[0].strftime(OUTPUT_DATE_FORMAT)
+last_six_months_str = six_months_before_last.strftime(OUTPUT_DATE_FORMAT)
+last_date_str = last_date.strftime(OUTPUT_DATE_FORMAT)
+
+print(f"Between {first_date_str} and {last_date_str}, there were {len(dates)} requests made to our website")
+print(f"In the last six months ({last_six_months_str} - {last_date_str}), there were {len(last_six_months)} requests made to our website")
