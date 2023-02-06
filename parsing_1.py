@@ -18,12 +18,6 @@ OUTPUT_DATE_FORMAT = "%Y-%m-%d"
 # prospect of doing so in a dynamically typed language scares me a little.
 APACHE_LOG_REGEX = r"^[_0-9.A-Za-z-]+(?: [_0-9.A-Za-z-]+)? [_0-9.A-Za-z-]+ \[(\d{2}\/\w{3}\/\d{4}):\d{2}:\d{2}:\d{2} -\d{4}\] \"[^\"]*\" \d{3} [0-9-]+$"
 
-def parse(log):
-    dates = re.findall(APACHE_LOG_REGEX, log, re.MULTILINE)
-    # This maps `datetime.strptime` across every date in dates and creates a
-    # new list with the results
-    return [datetime.strptime(date, APACHE_LOG_DATE_FORMAT) for date in dates]
-
 file_contents = ""
 
 try:
@@ -42,15 +36,18 @@ except FileNotFoundError:
         file_contents = r.content.decode().replace("\r\n", "\n")
         log.write(file_contents)
 
-dates = parse(file_contents)
+# Extract the dates from every valid log entry
+date_strs = re.findall(APACHE_LOG_REGEX, log, re.MULTILINE)
+dates = [datetime.strptime(date, APACHE_LOG_DATE_FORMAT) for date in dates]
+
 # This will allow us to binary search for the first date from six months ago
 dates.sort()
-# `x[-1]` fetches the last element in `x`.
 last_date = dates[-1]
 # This isn't exactly 6 months, but it's probably close enough
 six_months_before_last = last_date.replace(month=last_date.month - 6)
 # Find where `six_months_before_last` would be if it was in the list.
 # If it's already in the list, this finds its first occurence.
+# This is equivalent to searching for the earliest date in the last six months.
 six_months_index = bisect_left(dates, six_months_before_last)
 last_six_months = dates[six_months_index:]
 
