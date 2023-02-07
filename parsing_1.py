@@ -37,8 +37,8 @@ except FileNotFoundError:
         log.write(file_contents)
 
 # Extract the dates from every valid log entry
-date_strs = re.findall(APACHE_LOG_REGEX, log, re.MULTILINE)
-dates = [datetime.strptime(date, APACHE_LOG_DATE_FORMAT) for date in dates]
+date_strs = re.findall(APACHE_LOG_REGEX, file_contents, re.MULTILINE)
+dates = [datetime.strptime(date, APACHE_LOG_DATE_FORMAT) for date in date_strs]
 
 # This will allow us to binary search for the first date from six months ago
 dates.sort()
